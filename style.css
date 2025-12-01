@@ -1,15 +1,102 @@
-section {
-  margin-bottom: 30px;
+body {
+  background: #f4f4f4;
+  font-family: Arial, sans-serif;
 }
 
-li {
-  margin: 5px 0;
+.container {
+  width: 420px;
+  margin: 40px auto;
+  background: #fff;
+  padding: 20px 25px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Canh checkbox sát chữ và giữa dòng */
-li input[type="checkbox"] {
-  margin-left: 5px; /* khoảng cách rất nhỏ */
+h1 {
+  text-align: center;
 }
-input[type="text"] {
-  width: 300px;
+
+.add-task {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.add-task input {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.add-task button {
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+#task-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.task {
+  background: #fafafa;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: 0.2s;
+}
+
+.task.done .text {
+  text-decoration: line-through;
+  color: #777;
+}
+
+.task input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.text {
+  flex: 1;
+}
+
+.delete {
+  background: rgb(255, 72, 72);
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.filters button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+}
+
+.filters button.active {
+  background: #007bff;
+  color: white;
+}
+
+.clear-btn {
+  margin-top: 15px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background: rgb(255, 72, 72);
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
 }

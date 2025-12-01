@@ -1,117 +1,129 @@
 "use strict";
 
-// Hàm tạo li mới với checkbox sát chữ
-function createLi(text) {
-  const li = document.createElement("li");
-  const input = document.createElement("input");
-  input.type = "checkbox";
-  const textNode = document.createTextNode(text.trim());
-  li.appendChild(textNode);
-  li.appendChild(input);
-  return li;
+const listEl = document.getElementById("task-list");
+const inputEl = document.getElementById("task-input");
+const addBtn = document.getElementById("add-btn");
+const clearBtn = document.getElementById("clear-completed");
+const filterBtns = document.querySelectorAll(".filters button");
+
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+let currentFilter = "all";
+
+// =========================
+// Lưu dữ liệu
+// =========================
+function save() {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-// Hàm xóa các mục đã check
-function deleteChecked(ul, saveFn) {
-  Array.from(ul.children).forEach((li) => {
-    const checkbox = li.querySelector("input[type='checkbox']");
-    if (checkbox.checked) li.remove();
-  });
-  saveFn();
+// =========================
+// Render UI
+// =========================
+function render() {
+  listEl.innerHTML = "";
+
+  tasks
+    .filter((t) => {
+      if (currentFilter === "active") return !t.done;
+      if (currentFilter === "done") return t.done;
+      return true;
+    })
+    .forEach((task, index) => {
+      const li = document.createElement("li");
+      li.className = "task" + (task.done ? " done" : "");
+
+      li.innerHTML = `
+        <input type="checkbox" ${
+          task.done ? "checked" : ""
+        } data-idx="${index}">
+        <span class="text" data-edit="${index}">${task.text}</span>
+        <button class="delete" data-del="${index}">X</button>
+      `;
+
+      listEl.appendChild(li);
+    });
 }
 
-// Hàm load dữ liệu từ localStorage
-function loadList(ul, key) {
-  const saved = localStorage.getItem(key);
-  if (saved) ul.innerHTML = saved;
-}
+// =========================
+// Thêm task
+// =========================
+addBtn.onclick = () => {
+  const text = inputEl.value.trim();
+  if (text === "") return;
 
-// ==========================
-// UL1
-// ==========================
-const ul1 = document.getElementById("ul1");
-const add1 = document.getElementById("add1");
-const text1 = document.getElementById("text1");
-const delete1 = document.getElementById("delete1");
-
-function save1() {
-  localStorage.setItem("key1", ul1.innerHTML);
-}
-
-add1.onclick = () => {
-  if (text1.value.trim() === "") return;
-  ul1.appendChild(createLi(text1.value));
-  text1.value = "";
-  save1();
+  tasks.push({ text, done: false });
+  inputEl.value = "";
+  save();
+  render();
 };
-delete1.onclick = () => deleteChecked(ul1, save1);
 
-// ==========================
-// UL2
-// ==========================
-const ul2 = document.getElementById("ul2");
-const add2 = document.getElementById("add2");
-const text2 = document.getElementById("text2");
-const delete2 = document.getElementById("delete2");
-
-function save2() {
-  localStorage.setItem("key2", ul2.innerHTML);
-}
-
-add2.onclick = () => {
-  if (text2.value.trim() === "") return;
-  ul2.appendChild(createLi(text2.value));
-  text2.value = "";
-  save2();
+// Enter = Add
+inputEl.onkeydown = (e) => {
+  if (e.key === "Enter") addBtn.onclick();
 };
-delete2.onclick = () => deleteChecked(ul2, save2);
 
-// ==========================
-// UL3
-// ==========================
-const ul3 = document.getElementById("ul3");
-const add3 = document.getElementById("add3");
-const text3 = document.getElementById("text3");
-const delete3 = document.getElementById("delete3");
+// =========================
+// Delegation: Xử lý click trong list
+// =========================
+listEl.onclick = (e) => {
+  const idx = e.target.dataset.idx;
+  const del = e.target.dataset.del;
+  const edit = e.target.dataset.edit;
 
-function save3() {
-  localStorage.setItem("key3", ul3.innerHTML);
-}
+  // Toggle checkbox
+  if (idx !== undefined) {
+    tasks[idx].done = !tasks[idx].done;
+    save();
+    render();
+  }
 
-add3.onclick = () => {
-  if (text3.value.trim() === "") return;
-  ul3.appendChild(createLi(text3.value));
-  text3.value = "";
-  save3();
+  // Xóa
+  if (del !== undefined) {
+    tasks.splice(del, 1);
+    save();
+    render();
+  }
+
+  // Edit inline
+  if (edit !== undefined) {
+    const span = e.target;
+    const oldText = span.textContent;
+
+    const input = document.createElement("input");
+    input.value = oldText;
+    input.className = "edit-input";
+
+    span.replaceWith(input);
+    input.focus();
+
+    input.onblur = () => {
+      tasks[edit].text = input.value.trim() || oldText;
+      save();
+      render();
+    };
+  }
 };
-delete3.onclick = () => deleteChecked(ul3, save3);
 
-// ==========================
-// UL4
-// ==========================
-const ul4 = document.getElementById("ul4");
-const add4 = document.getElementById("add4");
-const text4 = document.getElementById("text4");
-const delete4 = document.getElementById("delete4");
-
-function save4() {
-  localStorage.setItem("key4", ul4.innerHTML);
-}
-
-add4.onclick = () => {
-  if (text4.value.trim() === "") return;
-  ul4.appendChild(createLi(text4.value));
-  text4.value = "";
-  save4();
+// =========================
+// Clear completed tasks
+// =========================
+clearBtn.onclick = () => {
+  tasks = tasks.filter((t) => !t.done);
+  save();
+  render();
 };
-delete4.onclick = () => deleteChecked(ul4, save4);
 
-// ==========================
-// Load dữ liệu khi mở trang
-// ==========================
-window.onload = () => {
-  loadList(ul1, "key1");
-  loadList(ul2, "key2");
-  loadList(ul3, "key3");
-  loadList(ul4, "key4");
-};
+// =========================
+// Bộ lọc
+// =========================
+filterBtns.forEach((btn) => {
+  btn.onclick = () => {
+    filterBtns.forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentFilter = btn.dataset.filter;
+    render();
+  };
+});
+
+// Load lần đầu
+render();
